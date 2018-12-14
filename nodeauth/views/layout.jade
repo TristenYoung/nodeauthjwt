@@ -1,0 +1,24 @@
+doctype html
+html
+  head
+    title= title
+
+    block styles
+
+        link(rel='stylesheet', href='/stylesheets/bootstrap.css')
+
+  body
+
+    block navBar
+        div.container
+            ul.col-md-12.row
+                a(href="/")
+                    li.col-md-3.col-1 Citizen
+                a(href="/users/register")
+                    li.col-md-3 Register
+                a(href="/users/login")
+                    li.col-md-3 Login
+                a(href="/users/logout")
+                    li.col-md-3 Logout
+
+    block content
