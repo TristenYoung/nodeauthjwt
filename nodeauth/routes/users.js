@@ -3,6 +3,7 @@ var router = express.Router();
 var passport = require('passport');
 var LocalStrategy = require('passport-local');
 var User = require('../models/user');
+var jwt = require('jsonwebtoken');
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
@@ -83,7 +84,6 @@ router.post(
     '/login', 
     passport.authenticate('local', {
         failureRedirect: '/users/login', 
-        successRedirect: '/',
         failureFlash: true, 
         badRequestMessage: 'Please enter your account credentials to login.'
     }), 
@@ -118,7 +118,6 @@ passport.use(new LocalStrategy({usernameField: 'email', passwordField: 'password
     }
     User.comparePassword(password, user.password, function(err, isMatch){
       if(err){ 
-console.log(user);
          return done(null, user); 
       }else{ 
         return done(null, false, {message: 'Invalid Password'});
@@ -141,14 +140,56 @@ router.get('/api', function(req, res){
   });
 });
 
-router.post('/api/posts', function(req, res){
-  res.json({
-    message: 'Post created...'
+router.post('/api/posts', verifyToken, function(req, res){
+  jwt.verify(req.token, 'secretkey', function(err, authData){
+    if(err){
+	res.sendStatus(403);
+    }else{
+	  res.json({
+    message: 'Post created...',
+    authData
+      });
+    }
   });
 });
 
 router.post('/api/login', function(req, res){
-  jwt.sign();
+  //Mock Users
+
+  const user1 = {
+    id: 1,
+    username: 'Tommy',
+    email: 'Tommy@aol.com'
+  }
+  jwt.sign({user1}, 'secretkey', function(err, token){
+    res.json({
+      token
+    });
+  });
 });
+
+// FORMAT OF TOKEN
+//Authorization: Bearer <access_token>
+
+// Verify token
+function verifyToken(req, res, next){
+  //Get auth header value
+  const bearerHeader = req.headers['authorization'];
+  //Check if bearer is undefined
+  if(typeof bearerHeader !== 'undefined'){
+    //Split at the space
+    const bearer = bearerHeader.split(' ');
+    //Get troken from array
+    const bearerToken = bearer[1];
+    //Set the token
+    req.token = bearerToken;
+    //Next middleware
+    next();
+  }else{
+    //Forbidden
+    res.sendStatus(403);
+
+  }
+}
 ///////////////////////////////////////////////////////////
 module.exports = router;
