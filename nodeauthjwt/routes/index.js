@@ -32,7 +32,6 @@ const opts = {
 }
 
 const strategy = new JwtStrategy(opts, function(payload, next) {
-  //TODO get user from db
   User.forge({id: payload.id }).fetch().then(function(res){
 
   next(null, res);
